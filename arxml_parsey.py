@@ -11,9 +11,10 @@ import json
 
 
 class ArxmlToXls:
-    def __init__(self, arxmlFile):
+    def __init__(self, arxmlFile, save_file):
+        self.fs = open(save_file, 'w')
         self.arxmlFile = arxmlFile
-        self.lines = None        
+        self.lines = str()        
         self.depth = 0
         self.arxml_to_dict()
 
@@ -34,6 +35,7 @@ class ArxmlToXls:
         for container in containers_list:
             container_root_name = container['SHORT-NAME']
             print('#'*(self.depth) + ' ' + container_root_name)
+            self.lines = self.lines + ('#'*(self.depth) + ' ' + container_root_name) + '\n'
             if(container_root_name == 'TEST0_AD'):
                 pass
             if 'SUB-CONTAINERS' not in container:
@@ -71,6 +73,8 @@ class ArxmlToXls:
                             definition_value = value['VALUE']
                         print('#'*(self.depth+1), definition)
                         print('#'*(self.depth+2), definition_value)
+                        self.lines+= ('#'*(self.depth+1) + definition) + '\n'
+                        self.lines+= ('#'*(self.depth+2) + definition_value) + '\n'
                         # print('depth = {0}'.format(self.depth))
 
             else:
@@ -79,6 +83,8 @@ class ArxmlToXls:
                 # print('2', type(sub_containers))                
                 self.foreach_containers(sub_containers)
         self.depth-= 1
+    def save_file(self):
+        self.fs.write(self.lines)
     def get_mermaid(self):
         if isinstance(self.arxml_dict['AUTOSAR']['AR-PACKAGES']['AR-PACKAGE']['ELEMENTS']['ECUC-MODULE-CONFIGURATION-VALUES']['CONTAINERS'], dict):
             # print('get containers')
@@ -91,12 +97,14 @@ class ArxmlToXls:
 
     def parse_topology(self):
         self.get_mermaid()
+        self.save_file()
 
 
 if __name__ == '__main__':
     file = sys.argv[1]
+    file_to_save = sys.argv[2]
     # arFile = r'adc_test.arxml'
-    arxmlObject = ArxmlToXls(file)
+    arxmlObject = ArxmlToXls(file, file_to_save)
     pass
 
 
